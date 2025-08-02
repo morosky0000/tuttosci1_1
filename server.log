@@ -1,0 +1,11 @@
+🔗 Connesso al database SQLite.
+✅ Tabelle del database verificate/create con successo.
+🚀 Server API avviato su http://localhost:3001
+📊 Endpoints disponibili (con database SQLite):
+   GET    /api/atleti - Ottieni tutti gli atleti
+   GET    /api/atleti/:fis_code - Ottieni atleta specifico
+   POST   /api/atleti/processa-gare - Processa gare per un atleta
+   POST   /api/atleti/fis-points - Aggiorna punti FIS per atleti
+   DELETE /api/atleti/:fis_code - Elimina un atleta
+
+🎯 Pronto a ricevere dati!
