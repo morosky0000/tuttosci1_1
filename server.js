@@ -175,124 +175,31 @@ app.get('/api/atleti', (req, res) => {
 
 // Get athletes ranking with pagination and filters (for frontend)
 app.get('/api/atleti/ranking', (req, res) => {
-  const { page = 1, limit = 20, specialita, nazione, sesso, eta_min, eta_max } = req.query;
+  const { page = 1, limit = 20, sesso } = req.query;
   const offset = (page - 1) * limit;
   
   let query = `
-    SELECT a.fis_code, a.nome, '' as cognome, a.eta, a.sesso, a.nazionalita as nazione, 
-           a.punti_sl, a.punti_gs, a.punti_sg, a.punti_dh, a.punti_ac,
-           COUNT(g.id) as totale_gare,
-           COUNT(CASE WHEN g.posizione = '1' THEN 1 END) as vittorie,
-           AVG(CASE WHEN g.posizione GLOB '[0-9]*' THEN CAST(g.posizione AS INTEGER) END) as posizione_media,
-           MIN(CASE WHEN g.posizione GLOB '[0-9]*' THEN CAST(g.posizione AS INTEGER) END) as miglior_posizione
-    FROM atleti a
-    LEFT JOIN gare g ON a.fis_code = g.atleta_fis_code
-    WHERE 1=1
+    SELECT *, 
+    ROUND((COALESCE(punti_sl, 999) + COALESCE(punti_gs, 999) + COALESCE(punti_sg, 999) + COALESCE(punti_dh, 999) + COALESCE(punti_ac, 999)) / 5, 2) as punti_fis
+    FROM atleti WHERE 1=1
   `;
+  const params = [];
   
-  let params = [];
-  
-  if (specialita) {
-    query += ' AND g.specialita = ?';
-    params.push(specialita);
-  }
-  
-  if (sesso) {
-    query += ' AND a.sesso = ?';
+  if (sesso && sesso !== 'tutti') {
+    query += ' AND sesso = ?';
     params.push(sesso);
   }
   
-  if (nazione) {
-    query += ' AND a.nazionalita = ?';
-    params.push(nazione);
-  }
-  
-  if (eta_min) {
-    query += ' AND a.eta >= ?';
-    params.push(parseInt(eta_min));
-  }
-  
-  if (eta_max) {
-    query += ' AND a.eta <= ?';
-    params.push(parseInt(eta_max));
-  }
-  
-  // Aggiungi ricerca per nome se specificata
-  if (req.query.search) {
-    query += ' AND a.nome LIKE ?';
-    params.push(`%${req.query.search}%`);
-  }
-  
-  query += ' GROUP BY a.fis_code ORDER BY COALESCE(posizione_media, 999) ASC LIMIT ? OFFSET ?';
+  query += ' ORDER BY punti_fis ASC LIMIT ? OFFSET ?';
   params.push(parseInt(limit), parseInt(offset));
   
   db.all(query, params, (err, rows) => {
     if (err) {
-      res.status(500).json({ 
-        success: false, 
-        message: err.message 
-      });
+      console.error('Errore query ranking:', err);
+      res.status(500).json({ error: 'Errore interno del server' });
       return;
     }
-    
-    // Get total count for pagination
-    let countQuery = `
-      SELECT COUNT(DISTINCT a.fis_code) as total
-      FROM atleti a
-      LEFT JOIN gare g ON a.fis_code = g.atleta_fis_code
-      WHERE 1=1
-    `;
-    
-    let countParams = [];
-    
-    if (specialita) {
-      countQuery += ' AND g.specialita = ?';
-      countParams.push(specialita);
-    }
-    
-    if (sesso) {
-      countQuery += ' AND a.sesso = ?';
-      countParams.push(sesso);
-    }
-    
-    if (nazione) {
-      countQuery += ' AND a.nazionalita = ?';
-      countParams.push(nazione);
-    }
-    
-    if (eta_min) {
-      countQuery += ' AND a.eta >= ?';
-      countParams.push(parseInt(eta_min));
-    }
-    
-    if (eta_max) {
-      countQuery += ' AND a.eta <= ?';
-      countParams.push(parseInt(eta_max));
-    }
-    
-    // Aggiungi ricerca per nome nella query di conteggio
-    if (req.query.search) {
-      countQuery += ' AND a.nome LIKE ?';
-      countParams.push(`%${req.query.search}%`);
-    }
-    
-    db.get(countQuery, countParams, (err, countRow) => {
-      if (err) {
-        res.status(500).json({ 
-          success: false, 
-          message: err.message 
-        });
-        return;
-      }
-      
-      res.json({
-        success: true,
-        data: rows,
-        total: countRow.total,
-        page: parseInt(page),
-        limit: parseInt(limit)
-      });
-    });
+    res.json(rows);
   });
 });
 
