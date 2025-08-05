@@ -1,0 +1,62 @@
+[
+  {
+    "fis_code": "6294207",
+    "urlcodefis": "230284",
+    "offset": 0,
+    "max_offset": 608
+  },
+  {
+    "fis_code": "6297613",
+    "urlcodefis": "295656",
+    "offset": 1,
+    "max_offset": 608
+  },
+  {
+    "fis_code": "6295580",
+    "urlcodefis": "222080",
+    "offset": 2,
+    "max_offset": 608
+  },
+  {
+    "fis_code": "10000756",
+    "urlcodefis": "270442",
+    "offset": 3,
+    "max_offset": 608
+  },
+  {
+    "fis_code": "6295082",
+    "urlcodefis": "203700",
+    "offset": 4,
+    "max_offset": 608
+  },
+  {
+    "fis_code": "6297637",
+    "urlcodefis": "296180",
+    "offset": 5,
+    "max_offset": 608
+  },
+  {
+    "fis_code": "6297638",
+    "urlcodefis": "296181",
+    "offset": 6,
+    "max_offset": 608
+  },
+  {
+    "fis_code": "10001619",
+    "urlcodefis": "286535",
+    "offset": 7,
+    "max_offset": 608
+  },
+  {
+    "fis_code": "10000027",
+    "urlcodefis": "256313",
+    "offset": 8,
+    "max_offset": 608
+  },
+  {
+    "fis_code": "6293470",
+    "urlcodefis": "212200",
+    "offset": 9,
+    "max_offset": 608
+  }
+]
