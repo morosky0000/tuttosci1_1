@@ -3,7 +3,12 @@
   publish = "build"
   functions = "netlify/functions"
 
-# Redirect per SPA (Single Page Application)
+# Redirect per SPA (Single Page Application) - escludi API
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+
 [[redirects]]
   from = "/*"
   to = "/index.html"
