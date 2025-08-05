@@ -28,7 +28,7 @@ app.get('/api/atleti', (req, res) => {
   }
   
   if (nazione && nazione !== 'tutte') {
-    query += ' AND nazione = ?';
+    query += ' AND nazionalita = ?';
     params.push(nazione);
   }
   
@@ -43,11 +43,11 @@ app.get('/api/atleti', (req, res) => {
   }
   
   if (search) {
-    query += ' AND (nome LIKE ? OR cognome LIKE ?)';
-    params.push(`%${search}%`, `%${search}%`);
+    query += ' AND nome LIKE ?';
+    params.push(`%${search}%`);
   }
   
-  query += ' ORDER BY punti_fis ASC';
+  query += ' ORDER BY (COALESCE(punti_sl, 999) + COALESCE(punti_gs, 999) + COALESCE(punti_sg, 999) + COALESCE(punti_dh, 999) + COALESCE(punti_ac, 999)) / 5 ASC';
   
   db.all(query, params, (err, rows) => {
     if (err) {
@@ -158,10 +158,14 @@ app.post('/api/duello', (req, res) => {
   }
   
   const query = `
-    SELECT a1.nome as nome1, a1.cognome as cognome1, a1.punti_fis as punti1, a1.nazione as nazione1,
-           a2.nome as nome2, a2.cognome as cognome2, a2.punti_fis as punti2, a2.nazione as nazione2
+    SELECT a1.nome as nome1, 
+           ROUND((COALESCE(a1.punti_sl, 999) + COALESCE(a1.punti_gs, 999) + COALESCE(a1.punti_sg, 999) + COALESCE(a1.punti_dh, 999) + COALESCE(a1.punti_ac, 999)) / 5, 2) as punti1, 
+           a1.nazionalita as nazione1,
+           a2.nome as nome2, 
+           ROUND((COALESCE(a2.punti_sl, 999) + COALESCE(a2.punti_gs, 999) + COALESCE(a2.punti_sg, 999) + COALESCE(a2.punti_dh, 999) + COALESCE(a2.punti_ac, 999)) / 5, 2) as punti2, 
+           a2.nazionalita as nazione2
     FROM atleti a1, atleti a2 
-    WHERE a1.id = ? AND a2.id = ?
+    WHERE a1.fis_code = ? AND a2.fis_code = ?
   `;
   
   db.get(query, [atleta1_id, atleta2_id], (err, row) => {
@@ -181,13 +185,11 @@ app.post('/api/duello', (req, res) => {
     res.json({
       atleta1: {
         nome: row.nome1,
-        cognome: row.cognome1,
         punti_fis: row.punti1,
         nazione: row.nazione1
       },
       atleta2: {
         nome: row.nome2,
-        cognome: row.cognome2,
         punti_fis: row.punti2,
         nazione: row.nazione2
       },
