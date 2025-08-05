@@ -51,17 +51,31 @@ export const fetchWithRetry = async (url: string, options: RequestInit = {}, ret
 
 // Utility per costruire URL con parametri
 export const buildApiUrl = (endpoint: string, params?: Record<string, string | number | undefined>): string => {
-  const url = new URL(endpoint, window.location.origin + API_BASE_URL);
+  // Assicurati che l'endpoint inizi con /
+  const cleanEndpoint = endpoint.startsWith('/') ? endpoint : `/${endpoint}`;
   
+  let fullUrl: string;
+  
+  if (API_BASE_URL.startsWith('http')) {
+    // Ambiente di sviluppo - URL completo
+    fullUrl = `${API_BASE_URL}${cleanEndpoint}`;
+  } else {
+    // Ambiente di produzione - percorso relativo
+    fullUrl = `${API_BASE_URL}${cleanEndpoint}`;
+  }
+  
+  // Aggiungi parametri query se presenti
   if (params) {
+    const url = new URL(fullUrl, window.location.origin);
     Object.entries(params).forEach(([key, value]) => {
       if (value !== undefined && value !== null && value !== '') {
         url.searchParams.append(key, String(value));
       }
     });
+    return url.toString();
   }
   
-  return url.toString();
+  return fullUrl;
 };
 
 export default {
