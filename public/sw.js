@@ -1,3 +1,5 @@
+/* eslint-env serviceworker */
+/* eslint-disable no-restricted-globals */
 // Service Worker per AtletiRanking PWA
 const CACHE_NAME = 'atleti-ranking-v1';
 const urlsToCache = [
