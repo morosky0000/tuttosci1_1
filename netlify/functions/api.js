@@ -12,7 +12,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // Database path per Netlify
-const dbPath = path.join(__dirname, '../../database.db');
+const dbPath = path.join(__dirname, 'database.db');
 const db = new sqlite3.Database(dbPath);
 
 // Routes
@@ -59,10 +59,40 @@ app.get('/api/atleti', (req, res) => {
   });
 });
 
+// Endpoint per ranking atleti con paginazione
+app.get('/api/atleti/ranking', (req, res) => {
+  const { page = 1, limit = 20, sesso } = req.query;
+  const offset = (page - 1) * limit;
+  
+  let query = `
+    SELECT *, 
+    ROUND((COALESCE(punti_sl, 999) + COALESCE(punti_gs, 999) + COALESCE(punti_sg, 999) + COALESCE(punti_dh, 999) + COALESCE(punti_ac, 999)) / 5, 2) as punti_fis
+    FROM atleti WHERE 1=1
+  `;
+  const params = [];
+  
+  if (sesso && sesso !== 'tutti') {
+    query += ' AND sesso = ?';
+    params.push(sesso);
+  }
+  
+  query += ' ORDER BY punti_fis ASC LIMIT ? OFFSET ?';
+  params.push(parseInt(limit), parseInt(offset));
+  
+  db.all(query, params, (err, rows) => {
+    if (err) {
+      console.error('Errore query ranking:', err);
+      res.status(500).json({ error: 'Errore interno del server' });
+      return;
+    }
+    res.json(rows);
+  });
+});
+
 app.get('/api/atleti/:id', (req, res) => {
   const { id } = req.params;
   
-  db.get('SELECT * FROM atleti WHERE id = ?', [id], (err, row) => {
+  db.get('SELECT * FROM atleti WHERE fis_code = ?', [id], (err, row) => {
     if (err) {
       console.error('Errore query atleta:', err);
       res.status(500).json({ error: 'Errore interno del server' });
@@ -79,13 +109,13 @@ app.get('/api/atleti/:id', (req, res) => {
 });
 
 app.get('/api/nazioni', (req, res) => {
-  db.all('SELECT DISTINCT nazione FROM atleti ORDER BY nazione', (err, rows) => {
+  db.all('SELECT DISTINCT nazionalita FROM atleti ORDER BY nazionalita', (err, rows) => {
     if (err) {
       console.error('Errore query nazioni:', err);
       res.status(500).json({ error: 'Errore interno del server' });
       return;
     }
-    res.json(rows.map(row => row.nazione));
+    res.json(rows.map(row => row.nazionalita));
   });
 });
 
