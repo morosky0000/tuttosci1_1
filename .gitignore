@@ -102,6 +102,10 @@ testvero.json
 fis_*.html
 fis_*.json
 
+# Database files (too large for GitHub)
+*.db
+database.db
+
 # Temporary files
 *.tmp
 *.temp

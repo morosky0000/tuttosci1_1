@@ -70,7 +70,11 @@ NPM_VERSION=9
 2. **Connetti repository** su Netlify
 3. **Configura build settings** come sopra
 4. **Aggiungi environment variables**
-5. **Deploy!**
+5. **⚠️ IMPORTANTE: Database Setup**
+   - I file `database.db` sono esclusi da Git (troppo grandi per GitHub)
+   - Prima del deploy, copia manualmente `database.db` in `netlify/functions/`
+   - Oppure ricrea il database usando `node reset-db.js`
+6. **Deploy!**
 
 ## 🔍 Troubleshooting
 
